@@ -7,30 +7,15 @@ export default async function handler(req, res) {
   if (!url) return res.status(400).json({ error: 'Missing url' });
 
   try {
-    const decoded = decodeURIComponent(url);
-    const isQuoteSummary = decoded.includes('quoteSummary');
-    
-    let headers = {
-      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-      'Accept': 'application/json',
-    };
-
-    if (isQuoteSummary) {
-      // Get crumb first
-      const crumbRes = await fetch('https://query1.finance.yahoo.com/v1/test/getcrumb', {
-        headers: { 'User-Agent': headers['User-Agent'], 'Cookie': '' }
-      });
-      const crumb = await crumbRes.text();
-      const cookie = crumbRes.headers.get('set-cookie') || '';
-      if (crumb && crumb.length < 20) {
-        const urlWithCrumb = decoded + (decoded.includes('?') ? '&' : '?') + 'crumb=' + encodeURIComponent(crumb);
-        const response = await fetch(urlWithCrumb, { headers: { ...headers, 'Cookie': cookie } });
-        const data = await response.json();
-        return res.status(200).json(data);
+    const response = await fetch(decodeURIComponent(url), {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Referer': 'https://finance.yahoo.com/',
+        'Origin': 'https://finance.yahoo.com',
       }
-    }
-
-    const response = await fetch(decoded, { headers });
+    });
     const contentType = response.headers.get('content-type') || '';
     if (contentType.includes('application/json')) {
       return res.status(200).json(await response.json());
